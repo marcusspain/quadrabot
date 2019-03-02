@@ -6,11 +6,12 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 #define MIN_PULSE_WIDTH 650
 #define MAX_PULSE_WIDTH 2350
 #define DEFAULT_PULSE_WIDTH 1500
-#define FREQUENCY 50
+#define FREQUENCY 60
 
 const int ARMS = 4;
 const int JOINTS = 3;
-const int REZ = 30;
+const int REZ = 50;
+
 
 const int armPorts[ARMS][JOINTS] = {
   { 0, 1, 2 },
@@ -54,6 +55,20 @@ const int liftBody[ARMS][JOINTS] = {
   { 60, 120, 120 }
 };
 
+const int liftFront[ARMS][JOINTS] = {
+  { 60, 120, 120 },
+  { 120, 60, 60 },
+  { 165, 110, 60 },
+  { 15, 60, 120 }
+};
+
+const int liftBack[ARMS][JOINTS] = {
+  { 15, 60, 120 },
+  { 165, 110, 60 },
+  { 120, 60, 60 },
+  { 60, 120, 120 }
+};
+
 const int stand[ARMS][JOINTS] = {
   { 15, 60, 120 },
   { 165, 110, 60 },
@@ -61,237 +76,190 @@ const int stand[ARMS][JOINTS] = {
   { 15, 60, 120 }
 };
 
+const int waveFrontRight0[ARMS][JOINTS] = {
+  { 110, 0, 150 },
+  { 125, 40, 30 },
+  { 125, 40, 60 },
+  { 35, 60, 140 }
+};
+
+const int waveFrontRight1[ARMS][JOINTS] = {
+  { 20, 0, 150 },
+  { 125, 40, 30 },
+  { 125, 40, 60 },
+  { 35, 60, 140 }
+};
+
+const int step0[ARMS][JOINTS] = {
+  { 80, 90, 150 },
+  { 110, 60, 80 },
+  { 110, 60, 30 },
+  { 50, 80, 150 }
+};
+
+int currentStance[ARMS][JOINTS];
+
+
 void setup()
 {
-  Serial.begin(57600);
+  Serial.begin(115200);
 
-  // Serial.println("awake");
-  // Serial.println(convertPointOnRange( 0, stand[0][0], liftFrontLeft[0][0], 0, REZ));
-  // Serial.println(convertPointOnRange( 25, stand[0][0], liftFrontLeft[0][0], 0, REZ));
-  // Serial.println(convertPointOnRange( 50, stand[0][0], liftFrontLeft[0][0], 0, REZ));
-  // Serial.println(convertPointOnRange( 75, stand[0][0], liftFrontLeft[0][0], 0, REZ));
-  // Serial.println(convertPointOnRange( 100, stand[0][0], liftFrontLeft[0][0], 0, REZ));
-
-
-  Serial.println("Quandrabot is Alive!");
   pwm.begin();
   pwm.setPWMFreq(FREQUENCY);
 
-  actionAttention();
-  delay(2000);
-  moveToTargets(liftFrontRight, 20);
-  delay(1000);
-  moveToTargets(liftFrontLeft, 20);
-  delay(1000);
-  moveToTargets(liftBackLeft, 20);
-  delay(1000);
-  moveToTargets(liftBackRight, 20);
-  delay(1000);
-  moveToTargets(liftBody, 20);
-  delay(2000);
-  moveToTargets(stand);
+  Serial.println();
+  Serial.println("Alive!");
 
-
-//   Serial.println("do the thing");
-//
-//
-//   int splines = new int[ARMS][JOINTS][2];
-//   // Serial.println((unsigned int)&splines);
-//
-//   int testE[2][5] = {
-//     { 1000, 1001, 1002, 1003, 1004 },
-//     { 2000, 2001, 2002, 2003, 2004 }
-//   };
-//
-//   int *ptr = (unsigned int)&testE;
-//
-//   Serial.println((unsigned int)&ptr);
-//   Serial.println((unsigned int)ptr);
-//   Serial.println((unsigned int)&testE);
-//   Serial.println((unsigned int)&testE[0][0]);
-//   Serial.println(testE[0][0]);
-//   Serial.println("-------");
-//   for (int a=0; a<2; a++) {
-//     for (int i=0; i<5; i++) {
-//       Serial.print((unsigned int)&testE[a][i]);
-//       Serial.print(":  ");
-//       Serial.print(testE[a][i]);
-//       Serial.print("\n");
-//     }
-//     Serial.print("\n");
-//   }
-//
-//   tfunc(testE);
-//   // testE[1][2] = 2222;
-//
-//   Serial.println("-------");
-//   for (int a=0; a<2; a++) {
-//     for (int i=0; i<5; i++) {
-//       Serial.print((unsigned int)&testE[a][i]);
-//       Serial.print(":  ");
-//       Serial.print(testE[a][i]);
-//       Serial.print("\n");
-//     }
-//     Serial.print("\n");
-//   }
-//
-//   Serial.println("--------------");
-//
-//   // int **p = new int*[2*5];
-//
-//   int testF[2][5];
-//   Serial.println((unsigned int)&testF);
-//   Serial.println((unsigned int)&testF[0]);
-//   Serial.println((unsigned int)&testF[0][0]);
-//   Serial.println((unsigned int)&testF[0][1]);
-//
-//   testF[0][0] = new int(3000);
-//
-//   tfunc(testF);
-//
-// }
-//
-// void tfunc( int n[2][5] ) {
-//   Serial.println("tfunc");
-//   Serial.println((unsigned int)&n);
-//   Serial.println(n[0][0]);
-//
-//   n[1][2] = 2222;
-//
-//   Serial.println("-------");
-//   for (int a=0; a<2; a++) {
-//     for (int i=0; i<5; i++) {
-//       Serial.print((unsigned int)&n[a][i]);
-//       Serial.print(":  ");
-//       Serial.print(n[a][i]);
-//       Serial.print("\n");
-//     }
-//     Serial.print("\n");
-//   }
-
-  // int frames[ARMS][JOINTS][REZ];
-  // Serial.println();
-  // Serial.println(sizeof(frames));
-  // Serial.println((unsigned int)&frames[0][0][0], HEX);
-  //
-  // for ( int a=0; a<ARMS; a++ ) {
-  //   for ( int j=0; j<JOINTS; j++ ) {
-  //     for ( int f=0; f<10; f++ ) {
-  //         frames[a][j][f] = 0;
-  //     }
-  //     Serial.print("\n");
-  //   }
-  //   Serial.print("\n");
-  // }
-  // Serial.print("\n");
-  //
-  // for ( int a=0; a<ARMS; a++ ) {
-  //   for ( int j=0; j<JOINTS; j++ ) {
-  //     for ( int f=0; f<10; f++ ) {
-  //         Serial.print((unsigned int)&frames[a][j][f], HEX);
-  //         Serial.print("=");
-  //         Serial.print(frames[a][j][f]);
-  //         Serial.print(", ");
-  //     }
-  //     Serial.print("\n");
-  //   }
-  //   Serial.print("\n");
-  // }
-  // Serial.print("\n");
-  //
-  // transformToPosition(frames, stand, liftFrontRight);
-  //
-  // Serial.println();
-  //
-  // for ( int a=0; a<ARMS; a++ ) {
-  //   for ( int j=0; j<JOINTS; j++ ) {
-  //     for ( int f=0; f<10; f++ ) {
-  //         Serial.print((unsigned int)&frames[a][j][f], HEX);
-  //         Serial.print("=");
-  //         Serial.print(frames[a][j][f]);
-  //         Serial.print(", ");
-  //     }
-  //     Serial.print("\n");
-  //   }
-  //   Serial.print("\n");
-  // }
-  // Serial.print("\n");
-
-  // Serial.println();
-  //
-  // int *frames = (int *)malloc(ARMS * JOINTS * REZ * sizeof(int));
-  //
-  // Serial.print("Size   : ");
-  // Serial.println(sizeof(frames));
-  // Serial.print("Address: ");
-  // Serial.println((unsigned int)&frames, HEX);
-  //
-  // trans2P(frames,stand,liftFrontLeft);
-  //
-  // for (int a=0; a<ARMS; a++) {
-  //   for (int j=0; j<JOINTS; j++) {
-  //     for (int f=0; f<REZ; f++) {
-  //       Serial.print((unsigned int)&frames + (a*JOINTS*REZ) + (j*REZ) + f, HEX);
-  //       Serial.print("=");
-  //       Serial.print(*(frames + (a*JOINTS*REZ) + (j*REZ) + f));
-  //       Serial.print(", ");
-  //     }
-  //     Serial.print("\n");
-  //   }
-  //   Serial.print("\n");
-  // }
-  // Serial.print("\n");
+  initStance(currentStance);
+  copyStance(stand, currentStance);
+  moveToStance(stand);
+  relax();
 
 }
 
-void trans2P( int s[ARMS*JOINTS*REZ], int startPosition[ARMS][JOINTS], int endPosition[ARMS][JOINTS] ) {
-  Serial.println("trans2P!");
-  Serial.println((unsigned int)&s, HEX);
+void testB() {
+  const int E = 308; // 308 is the highest value that will run.  Highest address is [0B54]2900.
+  // const int E = 307; // 307 is the max if varX is defined.
+  // const int E = 268; // [0B04]2820
+  // const int E = 265; // [0AFE]2814 - moved arr, addr, and arr2 definitions from before buffer to after print &varX.
+  // int *varX = new int(0);
+  //
+  //
+  //
+  char buffer [100];
+  // char buffer2 [100];
+  //
+  // sprintf(buffer2, "This string starts at [%04X]%d.  varX is at [%04X]%d.\n",
+  //                   &buffer2,
+  //                   &buffer2,
+  //                   &varX,
+  //                   &varX);
+  // Serial.println(buffer2);
 
-  for ( int a=0; a<ARMS; a++ ) {
-    for ( int j=0; j<JOINTS; j++ ) {
-      for ( int f=0; f<REZ; f++ ) {
-          *(s + (a*JOINTS*REZ) + (j*REZ) + f + sizeof(int)) = convertPointOnRange( f, startPosition[a][j], endPosition[a][j], 0, REZ );
-          Serial.print((unsigned int)&s + (a*JOINTS*REZ) + (j*REZ) + f + sizeof(int), HEX);
-          Serial.print("=");
-          Serial.print(*(s + (a*JOINTS*REZ) + (j*REZ) + f + sizeof(int)));
-          Serial.print(", ");
-      }
-      Serial.print("\n");
-    }
-    Serial.print("\n");
+  int * arr = (int *)malloc(E*sizeof(int));
+  int addr = &arr;
+  int arr2[E];
+
+  for (int i=0; i<E; i++) {
+    *(arr + i) = i;
+    arr2[i] = i;
   }
-  Serial.print("\n");
-  Serial.println("/trans2P");
-  Serial.print("\n");
-  return;
+
+  for (int i=0; i<E; i++) {
+    if ( i==0 || i==(E-1) ) {
+      sprintf( buffer, "Pointers: [%04X]%d *(arr + %d)=%d\t\tIndexed Array: [%04X]%d arr2[%d]=%d\n",
+                        &arr + i,
+                        &arr + i,
+                        i,
+                        *(arr + i),
+                        &arr2[i],
+                        &arr2[i],
+                        i,
+                        arr2[i]
+             );
+      Serial.print(buffer);
+    }
+  }
 }
 
-void transformToPosition( int s[ARMS][JOINTS][REZ], int startPosition[ARMS][JOINTS], int endPosition[ARMS][JOINTS] ) {
-  Serial.println("transformToPosition!");
-  Serial.println((unsigned int)&s, HEX);
+void testC() {
+  const int _A_ = 4;
+  const int _J_ = 3;
+  const int _F_ = 52;
+  int frames[_A_][_J_][_F_];
 
-  for ( int a=0; a<ARMS; a++ ) {
-    for ( int j=0; j<JOINTS; j++ ) {
-      for ( int f=0; f<10; f++ ) {
-          int v = new int;
-          v = convertPointOnRange( f, startPosition[a][j], endPosition[a][j], 0, REZ );
-          s[a][j][f] = v;
-          Serial.print((unsigned int)&s[a][j][f], HEX);
-          Serial.print("=");
-          // Serial.print(f);
-          // Serial.print(": ");
-          // Serial.print(v);
-          Serial.print(s[a][j][f]);
-          Serial.print(", ");
+  int count = 0;
+  for (int a=0; a<_A_; a++) {
+    for (int j=0; j<_J_; j++) {
+      for (int f=0; f<_F_; f++) {
+        frames[a][j][f] = count++;
+        Serial.println((int)&frames[a][j][f]);
       }
-      Serial.print("\n");
     }
-    Serial.print("\n");
   }
-  Serial.print("\n");
-  Serial.println("/transformToPosition");
-  return;
+
+
+  char buffer[100];
+  sprintf(buffer, "frames[0][0][0]: [%04X]%d = %d\n",
+                  &frames[0][0][0],
+                  &frames[0][0][0],
+                  frames[0][0][0]);
+  Serial.print(buffer);
+  sprintf(buffer, "frames[%d][%d][%d]: [%04X]%d = %d\n",
+                  _A_-1,
+                  _J_-1,
+                  _F_-1,
+                  &frames[_A_-1][_J_-1][_F_-1],
+                  &frames[_A_-1][_J_-1][_F_-1],
+                  frames[_A_-1][_J_-1][_F_-1]);
+  Serial.print(buffer);
+  sprintf(buffer, "buffer: [%04X]%d -- [%04X]%d\n",
+                  &buffer,
+                  &buffer,
+                  &buffer + 100,
+                  &buffer + 100);
+  Serial.print(buffer);
+}
+
+void testD() {
+  int frame[ARMS][JOINTS];
+
+  for ( int f=0; f<REZ; f++ ) {
+    for ( int a=0; a<ARMS; a++ ) {
+      for ( int j=0; j<JOINTS; j++ ) {
+        frame[a][j] = convertPointOnRange( f, stand[a][j], liftFrontRight[a][j], 0, REZ );
+      }
+    }
+    moveToStance(frame);
+    // delay(5);
+  }
+}
+
+void performWaveFrontRight() {
+  Serial.println("Hello World!");
+  transformToStance(liftFrontRight);
+  transformToStance(waveFrontRight0);
+  transformToStance(waveFrontRight1);
+  transformToStance(waveFrontRight0);
+  transformToStance(waveFrontRight1);
+  delay(500);
+  transformToStance(stand);
+}
+
+void performStomp() {
+  Serial.println("Grrrrrrr!");
+  transformToStance(liftFrontRight);
+  transformToStance(liftFrontLeft);
+  transformToStance(liftBackLeft);
+  transformToStance(liftBackRight);
+  transformToStance(stand);
+}
+
+void performStep0() {
+  Serial.print("Here I come!");
+
+}
+
+void transformToStance(int startPosition[ARMS][JOINTS], int endPosition[ARMS][JOINTS], int z) {
+  int frame[ARMS][JOINTS];
+
+  for ( int f=0; f<z; f++ ) {
+    for ( int a=0; a<ARMS; a++ ) {
+      for ( int j=0; j<JOINTS; j++ ) {
+        frame[a][j] = convertPointOnRange( f, startPosition[a][j], endPosition[a][j], 0, z );
+      }
+    }
+    moveToStance(frame);
+    copyStance(frame, currentStance);
+  }
+}
+
+void transformToStance(int stance[ARMS][JOINTS], int z) {
+  transformToStance(currentStance, stance, z);
+}
+
+void transformToStance(int stance[ARMS][JOINTS]) {
+  transformToStance(currentStance, stance, REZ);
 }
 
 int convertPointOnRange( int n, int minR0, int maxR0, int minR1, int maxR1 ) {
@@ -300,215 +268,44 @@ int convertPointOnRange( int n, int minR0, int maxR0, int minR1, int maxR1 ) {
   return (((n - minR1) * dR0) / dR1) + minR0;
 }
 
-
-
-void actionSitBackLeft() {
-  int targets[ARMS][JOINTS] = {
-    { 15, 60, 120 },
-    { 165, 110, 60 },
-    { 165, 110, 60 },
-    { 15, 60, 120 }
-  };
-  moveToTargets(targets, 10);
+void moveToStance(int stance[ARMS][JOINTS], uint8_t ms) {
+  moveToStance(stance);
 }
 
-void actionWaveArm(int arm) {
-  if ((arm < 0) || (arm > ARMS)) {
-    Serial.print("ERROR: arm ");
-    Serial.print(arm);
-    Serial.print(" isn't valid.");
-    exit;
-  }
-
-  int top = 130;
-  int bottom = 0;
-  for (int i=bottom; i<top; i++) {
-    pwm.setPWM(arm, 0, pulseWidth(i));
-    delay(10);
-  }
-
-  for (int i=top; i>bottom; i--) {
-    pwm.setPWM(arm, 0, pulseWidth(i));
-    delay(10);
-  }
-}
-
-void actionWaveAll() {
-  // Drive each PWM in a 'wave'
-  for (uint16_t i=0; i<4096; i += 8) {
-    for (uint8_t pwmnum=0; pwmnum < 12; pwmnum++ ) {
-      Serial.println((i + (4096/12)*pwmnum) % 4096);
-//      pwm.setPWM(pwmnum, 0, (i + (4096/16)*pwmnum) % 4096 );
-    }
-#ifdef ESP8266
-    yield();  // take a breather, required for ESP8266
-#endif
-  }
-}
-
-void actionAttention() {
-  Serial.println("Attention!");
-  int targets[ARMS][JOINTS] = {
-    { 15, 60, 120 },
-    { 165, 110, 60 },
-    { 165, 110, 60 },
-    { 15, 60, 120 }
-  };
-  moveToTargets(targets);
-}
-
-void actionAchtung() {
-  Serial.println("Achtung!");
-  pwm.setPWM(0, 0, pulseWidth(0));
-  pwm.setPWM(1, 0, pulseWidth(60));
-  pwm.setPWM(2, 0, pulseWidth(120));
-
-  pwm.setPWM(3, 0, pulseWidth(180));
-  pwm.setPWM(4, 0, pulseWidth(120));
-  pwm.setPWM(5, 0, pulseWidth(60));
-
-  pwm.setPWM(6, 0, pulseWidth(180));
-  pwm.setPWM(7, 0, pulseWidth(120));
-  pwm.setPWM(8, 0, pulseWidth(60));
-
-  pwm.setPWM(9, 0, pulseWidth(0));
-  pwm.setPWM(10, 0, pulseWidth(60));
-  pwm.setPWM(11, 0, pulseWidth(120));
-}
-
-void actionStomp() {
-  Serial.println("Stomp!");
-  moveToTargets(liftFrontRight);
-
-  delay(2000);
-
-  moveToTargets(stand);
-
-  // int stand[ARMS][JOINTS] = {
-  //   { 0, 40, 120 },
-  //   { 165, 110, 60 },
-  //   { 165, 110, 60 },
-  //   { 15, 60, 120 }
-  // };
-  // moveToTargets(targets);
-  //
-  // delay(100);
-  //
-  // targets[1] = { 165, 130, 60 };
-  // moveToTargets(targets);
-  //
-  // delay(200);
-  //
-  // targets[1] = { 165, 110, 60 };
-  // moveToTargets(targets);
-  //
-  // delay(100);
-  //
-  // targets[2] = { 165, 130, 60 };
-  // moveToTargets(targets);
-  //
-  // delay(200);
-  //
-  // targets[2] = { 165, 110, 60 };
-  // moveToTargets(targets);
-  //
-  // delay(100);
-  //
-  // targets[3] = { 0, 40, 120 };
-  // moveToTargets(targets);
-  //
-  // delay(200);
-  //
-  // targets[3] = { 0, 60, 120 };
-  // moveToTargets(targets);
-}
-
-void actionCreepUp() {
-  Serial.println("CreepUp!");
-  pwm.setPWM(0, 0, pulseWidth(0));
-  pwm.setPWM(1, 0, pulseWidth(60));
-  pwm.setPWM(2, 0, pulseWidth(120));
-
-  delay(500);
-
-  pwm.setPWM(3, 0, pulseWidth(180));
-  pwm.setPWM(4, 0, pulseWidth(120));
-  pwm.setPWM(5, 0, pulseWidth(60));
-
-  delay(500);
-
-  pwm.setPWM(6, 0, pulseWidth(180));
-  pwm.setPWM(7, 0, pulseWidth(120));
-  pwm.setPWM(8, 0, pulseWidth(60));
-
-  delay(500);
-
-  pwm.setPWM(9, 0, pulseWidth(0));
-  pwm.setPWM(10, 0, pulseWidth(60));
-  pwm.setPWM(11, 0, pulseWidth(120));
-}
-
-void actionPlayDead() {
-  Serial.println("PlayDead!");
-  int targets[ARMS][JOINTS] = {
-    { 120, 120, 120 },
-    { 60, 60, 60 },
-    { 60, 60, 60 },
-    { 120, 120, 120 }
-  };
-  moveToTargets(targets);
-}
-
-void actionBodyUp() {
-  Serial.println("BodyUp!");
-  int targets[ARMS][JOINTS] = {
-    { 60, 120, 120 },
-    { 120, 60, 60 },
-    { 120, 60, 60 },
-    { 60, 120, 120 }
-  };
-  moveToTargets(targets);
-}
-
-void actionSplay() {
-  Serial.println("Splay!");
-  int targets[ARMS][JOINTS] = {
-    { 130, 150, 90 },
-    { 50, 30, 90 },
-    { 50, 30, 90 },
-    { 130, 150, 90 }
-  };
-  moveToTargets(targets);
-}
-
-void moveToTargets(int targets[ARMS][JOINTS], uint8_t ms) {
-  // for ( int i=0; i<REZ; i++ ) {
-  //   moveToTargets(targets);
-  //   delay(ms);
-  // }
-  moveToTargets(targets);
-}
-
-void moveToTargets(int targets[ARMS][JOINTS] ) {
-  Serial.println("moveToTargets");
-  for ( int x=0; x<ARMS; x++ ) {
-    for ( int y=0; y<JOINTS; y++ ) {
-      Serial.print(targets[x][y]);
-      Serial.print(", ");
-    }
-    Serial.print("\n");
-  }
-  Serial.print("\n");
-
+void moveToStance(int stance[ARMS][JOINTS] ) {
   for ( int arm = 0; arm<ARMS; arm++ ) {
     for ( int joint=0; joint<JOINTS; joint++ ) {
-      Serial.print(pulseWidth(targets[arm][joint]));
-      Serial.print(", ");
-      pwm.setPWM(armPorts[arm][joint], 0, pulseWidth(targets[arm][joint]));
+      pwm.setPWM(armPorts[arm][joint], 0, pulseWidth(stance[arm][joint]));
+    }
+  }
+}
+
+void initStance(int stance[ARMS][JOINTS]) {
+  for ( int a=0; a<ARMS; a++ ) {
+    for ( int j=0; j<JOINTS; j++ ) {
+      stance[a][j] = 0;
+    }
+  }
+}
+
+void copyStance(int stanceA[ARMS][JOINTS], int stanceB[ARMS][JOINTS]) {
+  for ( int a=0; a<ARMS; a++ ) {
+    for ( int j=0; j<JOINTS; j++ ) {
+      stanceB[a][j] = stanceA[a][j];
+    }
+  }
+}
+
+void printStance(int stance[ARMS][JOINTS]) {
+  for ( int a=0; a<ARMS; a++ ) {
+    for ( int j=0; j<JOINTS; j++ ) {
+      Serial.print(stance[a][j]);
+      if ( j != JOINTS-1 ) {
+        Serial.print(", ");
+      }
     }
     Serial.print("\n");
   }
-  Serial.print("\n");
 }
 
 int pulseWidth(int angle)
@@ -520,6 +317,15 @@ int pulseWidth(int angle)
   return analog_value;
 }
 
+void relax() {
+  Serial.println("relax");
+  for ( int a=0; a<ARMS; a++ ) {
+    for ( int j=0; j<JOINTS; j++ ) {
+      pwm.setPWM(armPorts[a][j], 0, 4096);
+    }
+  }
+}
+
 void loop() {
   handleSerial();
 }
@@ -528,14 +334,65 @@ void handleSerial() {
  while (Serial.available() > 0) {
    char incomingCharacter = Serial.read();
    switch (incomingCharacter) {
-     case 'e':
-       moveToTargets(liftFrontRight);
+     case '1':
+       transformToStance(liftFrontRight);
        break;
-     case 'q':
-      moveToTargets(liftFrontLeft);
-      break;
+     case '2':
+       transformToStance(liftFrontLeft);
+       break;
+     case '3':
+       transformToStance(liftBackLeft);
+       break;
+     case '4':
+       transformToStance(liftBackRight);
+       break;
+     case '5':
+       transformToStance(liftFront);
+       break;
+     case '6':
+       transformToStance(liftBack);
+       break;
+     case '7':
+       transformToStance(stand);
+       break;
+     case '8':
+       transformToStance(stand);
+       break;
+     case '!':
+       transformToStance(step0);
+       break;
+     case '@':
+       transformToStance(liftFrontLeft);
+       break;
+     case '#':
+       transformToStance(liftBackLeft);
+       break;
+     case '$':
+       transformToStance(liftBackRight);
+       break;
+     case '%':
+       transformToStance(liftFront);
+       break;
+     case '^':
+       transformToStance(liftBack);
+       break;
+     case '&':
+       transformToStance(stand);
+       break;
+     case '*':
+       transformToStance(stand);
+       break;
+     case ' ':
+       transformToStance(stand);
+       break;
      case 's':
-       moveToTargets(stand);
+       performStomp();
+       break;
+     case 'w':
+       performWaveFrontRight();
+       break;
+     case 'r':
+       relax();
        break;
     }
   }
