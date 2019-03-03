@@ -91,8 +91,22 @@ const int waveFrontRight1[ARMS][JOINTS] = {
 };
 
 const int step0[ARMS][JOINTS] = {
+  { 60, 90, 160 },
+  { 125, 40, 60 },
+  { 125, 40, 20 },
+  { 35, 60, 140 }
+};
+
+const int step1[ARMS][JOINTS] = {
+  { 15, 60, 120 },
+  { 125, 40, 80 },
+  { 125, 40, 10 },
+  { 60, 60, 140 }
+};
+
+const int stepx[ARMS][JOINTS] = {
   { 80, 90, 150 },
-  { 110, 60, 80 },
+  { 110, 60, 60 },
   { 110, 60, 30 },
   { 50, 80, 150 }
 };
@@ -353,7 +367,7 @@ void handleSerial() {
        transformToStance(liftBack);
        break;
      case '7':
-       transformToStance(stand);
+       transformToStance(liftBody);
        break;
      case '8':
        transformToStance(stand);
@@ -362,7 +376,7 @@ void handleSerial() {
        transformToStance(step0);
        break;
      case '@':
-       transformToStance(liftFrontLeft);
+       transformToStance(step1);
        break;
      case '#':
        transformToStance(liftBackLeft);
@@ -384,6 +398,8 @@ void handleSerial() {
        break;
      case ' ':
        transformToStance(stand);
+       delay(500);
+       relax();
        break;
      case 's':
        performStomp();
